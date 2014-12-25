@@ -16,6 +16,8 @@
 SID sid;
 PcmOutput *pcm;
 
+extern "C" {
+
 EXPORT void set_freq(uint8_t voice, uint16_t freq)
 {
     if (voice < 1 || voice > 3) {
@@ -132,6 +134,8 @@ EXPORT void run_ms(uint32_t ms)
         bufindex = 0;
     }
 }
+
+} // extern "C"
 
 #if 0
 int main()
