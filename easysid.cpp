@@ -18,6 +18,13 @@ PcmOutput *pcm;
 
 extern "C" {
 
+EXPORT void set_reg(uint8_t reg, uint8_t value)
+{
+    if (reg <= 24) {
+        sid.write(reg, value);
+    }
+}
+
 EXPORT void set_freq(uint8_t voice, uint16_t freq)
 {
     if (voice < 1 || voice > 3) {
@@ -109,6 +116,59 @@ EXPORT void set_adsr(uint8_t voice, uint8_t attack, uint8_t decay, uint8_t susta
     }
     sid.write(7*voice + 5, ((attack & 0x0f) << 4) | (decay & 0x0f));
     sid.write(7*voice + 6, ((sustain & 0x0f) << 4) | (release & 0x0f));
+}
+
+EXPORT void set_filter_freq(uint16_t freq)
+{
+    sid.write(21, freq & 0x07);
+    sid.write(22, (freq >> 3) & 0xff);
+}
+
+EXPORT void set_filter_res(uint8_t res)
+{
+    char reg = sid.read_state().sid_register[23];
+    reg &= ~0xf0;
+    reg |= (res << 4) & 0x0f;
+    sid.write(23, reg);
+}
+
+EXPORT void set_filter_enable(uint8_t voice)
+{
+    if (voice < 1 || voice > 3) {
+        return;
+    }
+    char reg = sid.read_state().sid_register[23];
+    reg &= ~0x0f;
+    reg |= 1 < (voice - 1);
+    sid.write(23, reg);
+}
+
+EXPORT void set_filter_lp(bool enable)
+{
+    char reg = sid.read_state().sid_register[24];
+    reg |= 0x10;
+    sid.write(24, reg);
+}
+
+EXPORT void set_filter_bp(bool enable)
+{
+    char reg = sid.read_state().sid_register[24];
+    reg |= 0x20;
+    sid.write(24, reg);
+}
+
+EXPORT void set_filter_hp(bool enable)
+{
+    char reg = sid.read_state().sid_register[24];
+    reg |= 0x40;
+    sid.write(24, reg);
+}
+
+EXPORT void set_voice3_mute(bool mute)
+{
+    char reg = sid.read_state().sid_register[24];
+    reg |= 0x80;
+    sid.write(24, reg);
 }
 
 EXPORT void set_volume(uint8_t volume)
