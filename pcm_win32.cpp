@@ -1,8 +1,7 @@
 #include "pcm.h"
 
-#include <unistd.h>
-#include <sys/ioctl.h>
-
+#include <assert.h>
+#include <stdio.h>
 #include <windows.h>
 
 #define for if(0);else for
