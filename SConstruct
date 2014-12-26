@@ -5,13 +5,12 @@ import tarfile
 env = Environment()
 
 if sys.platform == "win32":
-    def extract_resid(target, source, env):
-        tarfile.open(source[0].path).extractall("external")
+    if not os.path.exists("external/resid-0.16/sid.patched.cc"):
+        tarfile.open("external/resid-0.16.tar.gz").extractall("external")
         with open("external/resid-0.16/sid.cc") as inf, open("external/resid-0.16/sid.patched.cc", "w") as outf:
             for s in inf:
                 s = s.replace("log(2)", "log(2.0)")
                 outf.write(s)
-    env.Command("external/resid-0.16/sid.patched.cc", "external/resid-0.16.tar.gz", extract_resid)
     libresid = env.Library("external/resid-0.16/resid.lib", [
         "external/resid-0.16/envelope.cc",
         "external/resid-0.16/extfilt.cc",
