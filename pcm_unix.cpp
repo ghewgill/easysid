@@ -1,5 +1,10 @@
 #include "pcm.h"
 
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
 #include <sys/soundcard.h>
 
 class PcmOutputUnix: public PcmOutput {
@@ -70,5 +75,5 @@ void PcmOutputUnix::output(const short *buf, int n)
 
 PcmOutput *makePcmOutputUnix()
 {
-    return new PcmOutputUnix();
+    return new PcmOutputUnix("/dev/dsp");
 }
