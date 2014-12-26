@@ -1,5 +1,7 @@
 .sconsign.dblite
 *.o*
+*.dll
 *.dylib
+*.so
 
 external/resid-0.16/
