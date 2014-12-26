@@ -33,8 +33,9 @@ else:
     env.Command("external/resid-0.16/Makefile", "external/resid-0.16/configure", "cd external/resid-0.16 && ./configure")
     libresid = env.Command("external/resid-0.16/.libs/libresid.a", "external/resid-0.16/Makefile", "cd external/resid-0.16 && make")
 
+env.Append(LIBS=[])
 if sys.platform == "win32":
-    env.Append(LIBS=["winmm", libresid])
+    env.Append(LIBS=["winmm"])
     pcm = ["pcm_win32.cpp"]
 elif sys.platform == "darwin":
     env.Append(FRAMEWORKS=["AudioToolbox"])
@@ -46,4 +47,4 @@ env.Append(CPPPATH=["external/resid-0.16"])
 
 env.Depends("easysid.cpp", libresid)
 libname = "libeasysid" if sys.platform == "win32" else "easysid"
-env.SharedLibrary(libname, ["easysid.cpp"] + pcm)
+env.SharedLibrary(libname, ["easysid.cpp"] + pcm, LIBS=[libresid] + env["LIBS"])
