@@ -30,7 +30,7 @@ if sys.platform == "win32":
     ])
 else:
     env.Command("external/resid-0.16/configure", "external/resid-0.16.tar.gz", lambda target, source, env: tarfile.open(source[0].path).extractall("external"))
-    env.Command("external/resid-0.16/Makefile", "external/resid-0.16/configure", "cd external/resid-0.16 && ./configure")
+    env.Command("external/resid-0.16/Makefile", "external/resid-0.16/configure", "cd external/resid-0.16 && env CXXFLAGS=-fPIC ./configure")
     libresid = env.Command("external/resid-0.16/.libs/libresid.a", "external/resid-0.16/Makefile", "cd external/resid-0.16 && make")
 
 env.Append(LIBS=[])
