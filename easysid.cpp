@@ -14,9 +14,29 @@
 #endif
 
 SID sid;
-PcmOutput *pcm;
+PcmOutput *pcm = NULL;
+PcmOutput *wav = NULL;
 
 extern "C" {
+
+EXPORT void start_capture(const char *fn)
+{
+    if (wav != NULL) {
+        // Deleting the existing object will flush, and close the current capture file.
+        delete wav;
+        wav = NULL;
+    }
+    wav = makePcmOutputWav(fn);
+}
+
+EXPORT void end_capture()
+{
+    if (wav != NULL) {
+        // Deleting the existing object will flush, and close the current capture file.
+        delete wav;
+        wav = NULL;
+    }
+}
 
 EXPORT void set_reg(uint8_t reg, uint8_t value)
 {
@@ -190,6 +210,10 @@ EXPORT void run_ms(uint32_t ms)
     cycle_count delta_t = ms * 1000;
     while (delta_t > 0) {
         bufindex += sid.clock(delta_t, buf + bufindex, buflength - bufindex);
+        // If we are capturing to a file, output the data to the file, then the sound device.
+        if (wav != NULL) {
+            wav->output(buf, bufindex);
+        }
         pcm->output(buf, bufindex);
         bufindex = 0;
     }
@@ -200,6 +224,7 @@ EXPORT void run_ms(uint32_t ms)
 #if 0
 int main()
 {
+    start_capture("EasySIDTest.wav");
     set_freq(1, 7382);
     set_pw(1, 2048);
     set_wave(1, 0);
@@ -207,5 +232,6 @@ int main()
     set_adsr(1, 8, 0, 15, 0);
     set_volume(15);
     run_ms(1000);
+    end_capture();
 }
 #endif

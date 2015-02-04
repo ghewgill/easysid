@@ -1,5 +1,10 @@
 #include "pcm.h"
 
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 class PcmOutputWav: public PcmOutput {
 public:
     PcmOutputWav(const char *fn);
@@ -45,10 +50,9 @@ PcmOutputWav::PcmOutputWav(const char *fn)
     header.nBitsPerSample = 16;
     strncpy(header.tagdata, "data", 4);
     header.datasize = 0;
-
     f = fopen(fn, "wb");
     if (f == NULL) {
-        perror("fopen");
+        perror("failed to open output file");
         exit(1);
     }
     fwrite(&header, 1, sizeof(header), f);
