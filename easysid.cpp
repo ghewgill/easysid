@@ -68,7 +68,7 @@ EXPORT void set_wave(uint8_t voice, uint8_t wave)
     if (voice < 1 || voice > 3) {
         return;
     }
-    if (wave > 4) {
+    if (wave >= 4) {
         return;
     }
     char reg = sid.read_state().sid_register[7*voice + 4];
