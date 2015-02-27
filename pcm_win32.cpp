@@ -6,9 +6,8 @@
 
 class PcmOutputWin32: public PcmOutput {
 public:
-    PcmOutputWin32();
+    PcmOutputWin32(uint32_t rate);
     virtual ~PcmOutputWin32();
-    virtual int getSampleRate() { return 44100; }
     virtual void output(const short *buf, int n);
     virtual void flush();
 private:
@@ -27,13 +26,13 @@ private:
     void wait();
 };
 
-PcmOutputWin32::PcmOutputWin32()
+PcmOutputWin32::PcmOutputWin32(uint32_t rate): PcmOutput(rate)
 {
     WAVEFORMATEX wf;
     wf.wFormatTag = WAVE_FORMAT_PCM;
     wf.nChannels = 1;
-    wf.nSamplesPerSec = 44100;
-    wf.nAvgBytesPerSec = 44100*16/8*1;
+    wf.nSamplesPerSec = getSampleRate();
+    wf.nAvgBytesPerSec = getSampleRate()*16/8*1;
     wf.nBlockAlign = 16/8;
     wf.wBitsPerSample = 16;
     wf.cbSize = 0;
@@ -136,7 +135,7 @@ void PcmOutputWin32::wait()
     buftail = (buftail + 1) % NBUFS;
 }
 
-PcmOutput *makePcmOutputWin32()
+PcmOutput *makePcmOutputWin32(uint32_t rate)
 {
-    return new PcmOutputWin32();
+    return new PcmOutputWin32(rate);
 }
