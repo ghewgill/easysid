@@ -43,6 +43,10 @@ elif sys.platform == "darwin":
 elif os.name == "posix":
     pcm = ["pcm_unix.cpp"]
 
+pcm.extend([
+    "pcm_wav.cpp",
+])
+
 env.Append(CPPPATH=["external/resid-0.16"])
 
 env.Depends("easysid.cpp", libresid)
