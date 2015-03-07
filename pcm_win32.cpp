@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <windows.h>
 
-#define for if(0);else for
-
 class PcmOutputWin32: public PcmOutput {
 public:
     PcmOutputWin32();
