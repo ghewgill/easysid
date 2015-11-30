@@ -45,13 +45,18 @@ EXPORT void set_reg(uint8_t reg, uint8_t value)
     }
 }
 
+reg8 voice_reg_base(uint8_t voice)
+{
+    return 7 * (voice - 1);
+}
+
 EXPORT void set_freq(uint8_t voice, uint16_t freq)
 {
     if (voice < 1 || voice > 3) {
         return;
     }
-    sid.write(7*voice + 0, freq & 0xff);
-    sid.write(7*voice + 1, (freq >> 8) & 0xff);
+    sid.write(voice_reg_base(voice) + 0, freq & 0xff);
+    sid.write(voice_reg_base(voice) + 1, (freq >> 8) & 0xff);
 }
 
 EXPORT void set_pw(uint8_t voice, uint16_t pw)
@@ -59,8 +64,8 @@ EXPORT void set_pw(uint8_t voice, uint16_t pw)
     if (voice < 1 || voice > 3) {
         return;
     }
-    sid.write(7*voice + 2, pw & 0xff);
-    sid.write(7*voice + 3, (pw >> 8) & 0x0f);
+    sid.write(voice_reg_base(voice) + 2, pw & 0xff);
+    sid.write(voice_reg_base(voice) + 3, (pw >> 8) & 0x0f);
 }
 
 EXPORT void set_wave(uint8_t voice, uint8_t wave)
@@ -68,13 +73,13 @@ EXPORT void set_wave(uint8_t voice, uint8_t wave)
     if (voice < 1 || voice > 3) {
         return;
     }
-    if (wave >= 4) {
+    if (wave > 0xF) {
         return;
     }
-    char reg = sid.read_state().sid_register[7*voice + 4];
+    char reg = sid.read_state().sid_register[voice_reg_base(voice) + 4];
     reg &= ~0xf0;
-    reg |= 0x10 << wave;
-    sid.write(7*voice + 4, reg);
+    reg |= (wave << 4);
+    sid.write(voice_reg_base(voice) + 4, reg);
 }
 
 EXPORT void set_test(uint8_t voice, bool test)
@@ -82,12 +87,12 @@ EXPORT void set_test(uint8_t voice, bool test)
     if (voice < 1 || voice > 3) {
         return;
     }
-    char reg = sid.read_state().sid_register[7*voice + 4];
+    char reg = sid.read_state().sid_register[voice_reg_base(voice) + 4];
     reg &= ~0x08;
     if (test) {
         reg |= 0x08;
     }
-    sid.write(7*voice + 4, reg);
+    sid.write(voice_reg_base(voice) + 4, reg);
 }
 
 EXPORT void set_ring(uint8_t voice, bool ring)
@@ -95,12 +100,12 @@ EXPORT void set_ring(uint8_t voice, bool ring)
     if (voice < 1 || voice > 3) {
         return;
     }
-    char reg = sid.read_state().sid_register[7*voice + 4];
+    char reg = sid.read_state().sid_register[voice_reg_base(voice) + 4];
     reg &= ~0x04;
     if (ring) {
         reg |= 0x04;
     }
-    sid.write(7*voice + 4, reg);
+    sid.write(voice_reg_base(voice) + 4, reg);
 }
 
 EXPORT void set_sync(uint8_t voice, bool sync)
@@ -108,12 +113,12 @@ EXPORT void set_sync(uint8_t voice, bool sync)
     if (voice < 1 || voice > 3) {
         return;
     }
-    char reg = sid.read_state().sid_register[7*voice + 4];
+    char reg = sid.read_state().sid_register[voice_reg_base(voice) + 4];
     reg &= ~0x02;
     if (sync) {
         reg |= 0x02;
     }
-    sid.write(7*voice + 4, reg);
+    sid.write(voice_reg_base(voice) + 4, reg);
 }
 
 EXPORT void set_gate(uint8_t voice, bool gate)
@@ -121,12 +126,12 @@ EXPORT void set_gate(uint8_t voice, bool gate)
     if (voice < 1 || voice > 3) {
         return;
     }
-    char reg = sid.read_state().sid_register[7*voice + 4];
+    char reg = sid.read_state().sid_register[voice_reg_base(voice) + 4];
     reg &= ~0x01;
     if (gate) {
         reg |= 0x01;
     }
-    sid.write(7*voice + 4, reg);
+    sid.write(voice_reg_base(voice) + 4, reg);
 }
 
 EXPORT void set_adsr(uint8_t voice, uint8_t attack, uint8_t decay, uint8_t sustain, uint8_t release)
@@ -134,8 +139,8 @@ EXPORT void set_adsr(uint8_t voice, uint8_t attack, uint8_t decay, uint8_t susta
     if (voice < 1 || voice > 3) {
         return;
     }
-    sid.write(7*voice + 5, ((attack & 0x0f) << 4) | (decay & 0x0f));
-    sid.write(7*voice + 6, ((sustain & 0x0f) << 4) | (release & 0x0f));
+    sid.write(voice_reg_base(voice) + 5, ((attack & 0x0f) << 4) | (decay & 0x0f));
+    sid.write(voice_reg_base(voice) + 6, ((sustain & 0x0f) << 4) | (release & 0x0f));
 }
 
 EXPORT void set_filter_freq(uint16_t freq)
@@ -152,42 +157,67 @@ EXPORT void set_filter_res(uint8_t res)
     sid.write(23, reg);
 }
 
-EXPORT void set_filter_enable(uint8_t voice)
+EXPORT void set_filter(uint8_t voice, bool enable)
 {
     if (voice < 1 || voice > 3) {
         return;
     }
     char reg = sid.read_state().sid_register[23];
-    reg &= ~0x0f;
-    reg |= 1 < (voice - 1);
+    reg8 mask = (1 << (voice - 1));
+    reg &= ~mask;
+    if (enable) {
+        reg |= mask;
+    }
+    sid.write(23, reg);
+}
+
+EXPORT void set_filter_external(bool enable)
+{
+    char reg = sid.read_state().sid_register[23];
+    reg &= ~0x08;
+    if (enable) {
+        reg |= 0x08;
+    }
     sid.write(23, reg);
 }
 
 EXPORT void set_filter_lp(bool enable)
 {
     char reg = sid.read_state().sid_register[24];
-    reg |= 0x10;
+    reg &= ~0x10;
+    if (enable) {
+        reg |= 0x10;
+    }
     sid.write(24, reg);
 }
 
 EXPORT void set_filter_bp(bool enable)
 {
     char reg = sid.read_state().sid_register[24];
-    reg |= 0x20;
+    reg &= ~0x20;
+    if (enable) {
+        reg |= 0x20;
+    }
     sid.write(24, reg);
 }
 
 EXPORT void set_filter_hp(bool enable)
 {
     char reg = sid.read_state().sid_register[24];
-    reg |= 0x40;
+    reg &= ~0x40;
+    if (enable) {
+        reg |= 0x40;
+    }
     sid.write(24, reg);
 }
 
 EXPORT void set_voice3_mute(bool mute)
 {
     char reg = sid.read_state().sid_register[24];
-    reg |= 0x80;
+    reg &= ~0x80;
+    if (mute) {
+        reg |= 0x80;
+    }
     sid.write(24, reg);
 }
 
