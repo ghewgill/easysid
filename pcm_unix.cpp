@@ -9,16 +9,14 @@
 
 class PcmOutputUnix: public PcmOutput {
 public:
-    PcmOutputUnix(const char *dev);
+    PcmOutputUnix(const char *dev, uint32_t rate);
     virtual ~PcmOutputUnix();
-    virtual int getSampleRate();
     virtual void output(const short *buf, int n);
 private:
     int fd;
-    int sample_rate;
 };
 
-PcmOutputUnix::PcmOutputUnix(const char *dev)
+PcmOutputUnix::PcmOutputUnix(const char *dev, uint32_t rate): PcmOutput(rate)
 {
     fd = open(dev, O_WRONLY);
     if (fd < 0) {
@@ -43,7 +41,6 @@ PcmOutputUnix::PcmOutputUnix(const char *dev)
         fprintf(stderr, "gen: Error, cannot set the channel number to 0\n");
         exit(1);
     }
-    sample_rate = 44100;
     sndparam = sample_rate;
     if (ioctl(fd, SNDCTL_DSP_SPEED, &sndparam) == -1) {
         perror("ioctl: SNDCTL_DSP_SPEED");
@@ -73,7 +70,7 @@ void PcmOutputUnix::output(const short *buf, int n)
     write(fd, buf, n*sizeof(short));
 }
 
-PcmOutput *makePcmOutputUnix()
+PcmOutput *makePcmOutputUnix(uint32_t rate)
 {
-    return new PcmOutputUnix("/dev/dsp");
+    return new PcmOutputUnix("/dev/dsp", rate);
 }

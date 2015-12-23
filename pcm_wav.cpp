@@ -7,9 +7,8 @@
 
 class PcmOutputWav: public PcmOutput {
 public:
-    PcmOutputWav(const char *fn);
+    PcmOutputWav(const char *fn, uint32_t rate);
     virtual ~PcmOutputWav();
-    virtual int getSampleRate() { return 44100; }
     virtual void output(const short *buf, int n);
     virtual void flush();
 private:
@@ -33,7 +32,7 @@ private:
     FILE *f;
 };
 
-PcmOutputWav::PcmOutputWav(const char *fn)
+PcmOutputWav::PcmOutputWav(const char *fn, uint32_t rate): PcmOutput(rate)
 {
     data_size = 0;
 
@@ -44,8 +43,8 @@ PcmOutputWav::PcmOutputWav(const char *fn)
     header.fmtsize = 16;
     header.wFormatTag = 1;
     header.nChannels = 1;
-    header.nSamplesPerSec = 44100;
-    header.nAvgBytesPerSec = 44100*16/8*1;
+    header.nSamplesPerSec = getSampleRate();
+    header.nAvgBytesPerSec = getSampleRate()*16/8*1;
     header.nBlockAlign = 16/8;
     header.nBitsPerSample = 16;
     strncpy(header.tagdata, "data", 4);
@@ -79,7 +78,7 @@ void PcmOutputWav::flush()
     fseek(f, 0, SEEK_END);
 }
 
-PcmOutput *makePcmOutputWav(const char *fn)
+PcmOutput *makePcmOutputWav(const char *fn, uint32_t rate)
 {
-    return new PcmOutputWav(fn);
+    return new PcmOutputWav(fn, rate);
 }

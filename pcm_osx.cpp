@@ -5,9 +5,8 @@
 
 class PcmOutputMacOSX: public PcmOutput {
 public:
-    PcmOutputMacOSX();
+    PcmOutputMacOSX(uint32_t rate);
     virtual ~PcmOutputMacOSX();
-    virtual int getSampleRate() { return 44100; }
     virtual void output(const short *buf, int n);
     virtual void flush();
 private:
@@ -24,8 +23,8 @@ private:
     static void callback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer);
 };
 
-PcmOutputMacOSX::PcmOutputMacOSX()
- : index(0), aq(NULL)
+PcmOutputMacOSX::PcmOutputMacOSX(uint32_t rate)
+ : PcmOutput(rate), index(0), aq(NULL)
 {
     sem_unlink("pcm.notfull");
     sem_unlink("pcm.full");
@@ -127,7 +126,7 @@ void PcmOutputMacOSX::callback(void *inUserData, AudioQueueRef inAQ, AudioQueueB
     sem_post(This->sem_notfull);
 }
 
-PcmOutput *makePcmOutputMacOSX()
+PcmOutput *makePcmOutputMacOSX(uint32_t rate)
 {
-    return new PcmOutputMacOSX();
+    return new PcmOutputMacOSX(rate);
 }
